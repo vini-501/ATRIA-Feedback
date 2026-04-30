@@ -50,8 +50,8 @@ export default function Navbar() {
             <span className="text-lg sm:text-2xl font-bold text-primary hidden sm:inline">ATRIA</span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden sm:flex gap-1">
+          {/* Department Navigation (Always visible) */}
+          <div className="flex gap-1">
             {departments.map((dept) => (
               <div key={dept.name} className="relative group">
                 <button
@@ -91,78 +91,10 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="sm:hidden p-2 text-primary hover:bg-gray-100 rounded-lg transition-colors"
-            aria-label="Toggle menu"
-          >
-            <svg
-              className={`w-6 h-6 transition-transform ${mobileMenuOpen ? 'rotate-90' : ''}`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            </svg>
-          </button>
+          {/* Removed Mobile Menu Button */}
         </div>
 
-        {/* Mobile Navigation Menu */}
-        {mobileMenuOpen && (
-          <div className="sm:hidden pb-4 border-t border-gray-200">
-            {departments.map((dept) => (
-              <div key={dept.name} className="mt-2">
-                <button
-                  onClick={() => setOpenMenu(openMenu === dept.name ? null : dept.name)}
-                  className={`w-full text-left px-4 py-2 text-sm font-bold transition-colors rounded flex items-center justify-between ${
-                    (dept.name === 'ISE' && isISE) || (dept.name === 'CSE(DS)' && isCSEDS)
-                      ? 'bg-primary text-white'
-                      : 'bg-gray-100 text-gray-700'
-                  }`}
-                >
-                  {dept.name}
-                  <svg
-                    className={`w-4 h-4 transition-transform ${openMenu === dept.name ? 'rotate-180' : ''}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                  </svg>
-                </button>
 
-                {/* Mobile Submenu */}
-                {openMenu === dept.name && (
-                  <div className="bg-gray-50 mt-1 rounded">
-                    {dept.pages.map((page) => (
-                      <Link
-                        key={page.path}
-                        href={page.path}
-                        className={`block px-4 py-2 text-sm transition-colors ${
-                          pathname === page.path
-                            ? 'bg-primary/10 text-primary font-bold'
-                            : 'text-gray-700 hover:bg-gray-100'
-                        }`}
-                        onClick={() => {
-                          setOpenMenu(null);
-                          setMobileMenuOpen(false);
-                        }}
-                      >
-                        {page.label}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
       </div>
     </nav>
   );
