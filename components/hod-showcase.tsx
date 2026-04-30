@@ -58,30 +58,14 @@ export default function HODShowcase({ hod }: HODShowcaseProps) {
                 {/* Photo Container */}
                 <div className="relative w-full aspect-[3/4] bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg overflow-hidden">
                   {/* Placeholder for HOD Photo */}
-                  <div className="w-full h-full flex items-center justify-center bg-gray-200">
-                    <div className="text-center">
-                      <svg
-                        className="w-20 h-20 sm:w-32 sm:h-32 text-gray-400 mx-auto mb-4"
-                        fill="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                      </svg>
-                      <p className="text-gray-500 font-semibold text-xs sm:text-sm">
-                        Photo Coming Soon
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Image (when provided) */}
-                  {/* 
                   <Image
-                    src="/images/hod-photo.jpg"
+                    src="/HOD.jpeg"
                     alt={hod.name}
                     fill
                     className="object-cover"
                   />
-                  */}
+
+
                 </div>
               </div>
 

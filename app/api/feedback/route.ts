@@ -4,9 +4,22 @@ import { Feedback } from '@/lib/models/Feedback'
 
 export async function POST(request: NextRequest) {
   try {
-    await connectDB()
+    console.log('[FEEDBACK_API] Starting request processing...');
+    
+    // Test database connection
+    try {
+      await connectDB()
+      console.log('[FEEDBACK_API] Database connected successfully');
+    } catch (dbError) {
+      console.error('[FEEDBACK_API] Database connection failed:', dbError);
+      return NextResponse.json(
+        { error: 'Database connection failed. Please check server logs.' },
+        { status: 500 }
+      )
+    }
 
     const body = await request.json()
+    console.log('[FEEDBACK_API] Request body received for department:', body.department);
 
     // Validate required fields
     const requiredFields = [
@@ -22,6 +35,7 @@ export async function POST(request: NextRequest) {
 
     for (const field of requiredFields) {
       if (!body[field]) {
+        console.warn(`[FEEDBACK_API] Missing field: ${field}`);
         return NextResponse.json(
           { error: `Missing required field: ${field}` },
           { status: 400 }
@@ -55,7 +69,7 @@ export async function POST(request: NextRequest) {
     // Prepare responses object - exclude personal info fields
     const responses: Record<string, string> = {}
     for (const [key, value] of Object.entries(body)) {
-      if (!['stakeholder_type', 'name', 'email', 'phone', 'organization', 'designation', 'years_of_experience', 'department'].includes(key)) {
+      if (!['stakeholder_type', 'name', 'email', 'phone', 'organization', 'designation', 'years_of_experience', 'department', 'departmentName', 'timestamp'].includes(key)) {
         responses[key] = value as string
       }
     }
@@ -75,12 +89,12 @@ export async function POST(request: NextRequest) {
       userAgent,
     })
 
+    console.log('[FEEDBACK_API] Saving to MongoDB...');
     // Save to MongoDB
     const savedFeedback = await feedback.save()
 
-    console.log('[FEEDBACK SAVED]', {
+    console.log('[FEEDBACK_API] Feedback saved successfully:', {
       id: savedFeedback._id,
-      timestamp: new Date().toISOString(),
       department: body.department,
       email: body.email,
     })
@@ -94,10 +108,10 @@ export async function POST(request: NextRequest) {
       },
       { status: 200 }
     )
-  } catch (error) {
-    console.error('Feedback submission error:', error)
+  } catch (error: any) {
+    console.error('[FEEDBACK_API] Unexpected error:', error)
     return NextResponse.json(
-      { error: 'Failed to process feedback submission' },
+      { error: error.message || 'Failed to process feedback submission' },
       { status: 500 }
     )
   }

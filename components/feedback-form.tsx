@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -14,6 +14,8 @@ import {
 } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { CheckCircle2, AlertCircle, Info } from 'lucide-react'
 
 interface Question {
   id?: string
@@ -69,14 +71,14 @@ function buildFormSchema(sections: Section[]) {
     if (section.questions) {
       section.questions.forEach((q, idx) => {
         const questionId = `${section.id}_q${idx}`
-        baseSchema[questionId] = relevanceEnum.optional()
+        baseSchema[questionId] = relevanceEnum
       })
     }
     if (section.subsections) {
       section.subsections.forEach((sub) => {
         sub.questions.forEach((q, idx) => {
           const questionId = `${sub.id}_q${idx}`
-          baseSchema[questionId] = relevanceEnum.optional()
+          baseSchema[questionId] = relevanceEnum
         })
       })
     }
@@ -100,6 +102,16 @@ export default function FeedbackForm({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitMessage, setSubmitMessage] = useState('')
   const [showPersonalDetails, setShowPersonalDetails] = useState(false)
+  const [alreadySubmitted, setAlreadySubmitted] = useState(false)
+
+  const storageKey = `atria_feedback_submitted_${department}`
+
+  useEffect(() => {
+    const status = localStorage.getItem(storageKey)
+    if (status === 'true') {
+      setAlreadySubmitted(true)
+    }
+  }, [storageKey])
 
   const schema = buildFormSchema(sections)
 
@@ -133,15 +145,18 @@ export default function FeedbackForm({
       })
 
       if (response.ok) {
-        setSubmitMessage('✓ Thank you! Your feedback has been submitted successfully.')
+        setSubmitMessage('success')
+        localStorage.setItem(storageKey, 'true')
+        setAlreadySubmitted(true)
         reset()
         onSubmitSuccess?.()
         window.scrollTo({ top: 0, behavior: 'smooth' })
       } else {
-        setSubmitMessage('✗ Error submitting form. Please try again.')
+        const errorData = await response.json().catch(() => ({}))
+        setSubmitMessage(errorData.error || 'Error submitting form. Please try again.')
       }
     } catch (error) {
-      setSubmitMessage('✗ Error submitting form. Please check your connection and try again.')
+      setSubmitMessage('Error submitting form. Please check your connection and try again.')
     } finally {
       setIsSubmitting(false)
     }
@@ -161,14 +176,36 @@ export default function FeedbackForm({
 
       {/* Form Container */}
       <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 pb-8 sm:pb-12">
+        {alreadySubmitted && !submitMessage && (
+          <Alert className="mb-8 border-primary/50 bg-primary/5">
+            <Info className="h-4 w-4 text-primary" />
+            <AlertTitle className="text-primary font-bold">Feedback Already Received</AlertTitle>
+            <AlertDescription>
+              You have already submitted feedback for the <strong>{departmentName}</strong> department in this session. 
+              Thank you for your valuable contribution!
+            </AlertDescription>
+          </Alert>
+        )}
+
         {submitMessage && (
-          <div className={`mb-6 sm:mb-8 p-3 sm:p-4 rounded-lg text-center font-semibold text-sm sm:text-base ${
-            submitMessage.startsWith('✓')
-              ? 'bg-green-100 text-green-800 border border-green-300'
-              : 'bg-red-100 text-red-800 border border-red-300'
-          }`}>
-            {submitMessage}
-          </div>
+          <Alert 
+            variant={submitMessage === 'success' ? 'default' : 'destructive'}
+            className={`mb-8 ${submitMessage === 'success' ? 'border-green-500 bg-green-50' : ''}`}
+          >
+            {submitMessage === 'success' ? (
+              <CheckCircle2 className="h-4 w-4 text-green-600" />
+            ) : (
+              <AlertCircle className="h-4 w-4" />
+            )}
+            <AlertTitle className={submitMessage === 'success' ? 'text-green-800 font-bold' : ''}>
+              {submitMessage === 'success' ? 'Success!' : 'Submission Error'}
+            </AlertTitle>
+            <AlertDescription className={submitMessage === 'success' ? 'text-green-700' : ''}>
+              {submitMessage === 'success' 
+                ? `Thank you! Your feedback for ${departmentName} has been submitted successfully.`
+                : submitMessage}
+            </AlertDescription>
+          </Alert>
         )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 sm:space-y-12">
@@ -366,7 +403,9 @@ export default function FeedbackForm({
                         const questionId = `${section.id}_q${qIdx}`
                         return (
                           <div key={questionId} className="border-b pb-4 sm:pb-6">
-                            <p className="text-gray-800 font-semibold mb-2 sm:mb-4 text-sm sm:text-base">{qIdx + 1}. {question}</p>
+                            <p className="text-gray-800 font-semibold mb-2 sm:mb-4 text-sm sm:text-base">
+                              {qIdx + 1}. {question} <span className="text-red-500">*</span>
+                            </p>
                             <div className="flex flex-col gap-2 sm:gap-4 pl-2 sm:pl-4">
                               {relevanceOptions.map((option) => (
                                 <label key={option} className="flex items-center gap-2 sm:gap-3 cursor-pointer hover:bg-gray-50 p-1 sm:p-2 rounded">
@@ -388,6 +427,9 @@ export default function FeedbackForm({
                                 </label>
                               ))}
                             </div>
+                            {errors[questionId] && (
+                              <p className="text-red-500 text-xs mt-2 ml-2 sm:ml-4">Please select an option</p>
+                            )}
                           </div>
                         )
                       })}
@@ -411,7 +453,9 @@ export default function FeedbackForm({
                               const questionId = `${subsection.id}_q${qIdx}`
                               return (
                                 <div key={questionId} className="bg-white p-2 sm:p-4 rounded border-b-2 border-gray-100">
-                                  <p className="text-gray-800 font-semibold mb-2 sm:mb-4 text-xs sm:text-sm">{qIdx + 1}. {question}</p>
+                                  <p className="text-gray-800 font-semibold mb-2 sm:mb-4 text-xs sm:text-sm">
+                                    {qIdx + 1}. {question} <span className="text-red-500">*</span>
+                                  </p>
                                   <div className="flex flex-col gap-2 sm:gap-4 pl-2 sm:pl-4">
                                     {relevanceOptions.map((option) => (
                                       <label key={option} className="flex items-center gap-2 sm:gap-3 cursor-pointer hover:bg-gray-50 p-1 sm:p-2 rounded">
@@ -433,6 +477,9 @@ export default function FeedbackForm({
                                       </label>
                                     ))}
                                   </div>
+                                  {errors[questionId] && (
+                                    <p className="text-red-500 text-xs mt-2 ml-2 sm:ml-4">Please select an option</p>
+                                  )}
                                 </div>
                               )
                             })}
@@ -447,7 +494,7 @@ export default function FeedbackForm({
           )}
 
           {/* Submit Button */}
-          {stakeholderType && (
+          {stakeholderType && !alreadySubmitted && (
             <div className="flex justify-center py-6 sm:py-8 px-4">
               <Button
                 type="submit"
@@ -464,6 +511,17 @@ export default function FeedbackForm({
                 )}
               </Button>
             </div>
+          )}
+
+          {alreadySubmitted && (
+             <div className="flex justify-center py-6 sm:py-8 px-4">
+               <Button
+                 disabled
+                 className="bg-gray-200 text-gray-500 px-6 sm:px-12 py-3 sm:py-4 text-sm sm:text-lg font-bold rounded-lg w-full sm:w-auto cursor-not-allowed"
+               >
+                 Feedback Already Submitted
+               </Button>
+             </div>
           )}
         </form>
       </div>
