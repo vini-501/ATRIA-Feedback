@@ -54,7 +54,7 @@ export default function Navbar() {
           <div className="flex bg-gray-100 p-0.5 rounded-lg shadow-inner">
             {departments.map((dept) => {
               const isActive = (dept.name === 'ISE' && isISE) || (dept.name === 'CSE(DS)' && isCSEDS);
-              const defaultPath = dept.pages.find(p => p.label === 'About')?.path || dept.path;
+              const defaultPath = dept.pages.find(p => p.label === 'Feedback')?.path || dept.path;
               
               return (
                 <Link
