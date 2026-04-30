@@ -390,8 +390,8 @@ export default function FeedbackForm({
                   <div className="mb-4 sm:mb-8">
                     <h2 className="text-2xl sm:text-3xl font-bold text-primary mb-3 sm:mb-4">{section.title}</h2>
                     {section.description && (
-                      <div className="bg-primary/5 border-l-4 border-primary p-3 sm:p-6 rounded-r-lg">
-                        <p className="text-gray-800 text-xs sm:text-base leading-relaxed italic">{section.description}</p>
+                      <div className="bg-white border-l-4 border-primary p-3 sm:p-5 rounded-r-lg shadow-md mt-4">
+                        <p className="text-gray-900 font-bold text-sm sm:text-lg leading-relaxed">{section.description}</p>
                       </div>
                     )}
                   </div>
@@ -442,9 +442,15 @@ export default function FeedbackForm({
                       {section.subsections.map((subsection, subIdx) => (
                         <div key={subsection.id} className="bg-gray-50 p-3 sm:p-6 rounded-lg border-l-4 border-primary">
                           {/* Subsection Title and Description */}
-                          <h3 className="text-lg sm:text-2xl font-bold text-gray-900 mb-2 sm:mb-3">{subsection.title}</h3>
-                          <div className="bg-white border-l-4 border-primary/50 p-2 sm:p-4 rounded mb-4 sm:mb-6">
-                            <p className="text-gray-700 leading-relaxed text-xs sm:text-sm">{subsection.description}</p>
+                          <div className="mb-4 sm:mb-6">
+                            <h3 className="text-xl sm:text-2xl font-black text-primary mb-2">
+                              {subsection.title.split(':')[0]}
+                            </h3>
+                            <div className="bg-white border-l-4 border-primary p-3 sm:p-5 rounded-r-lg shadow-sm">
+                              <p className="text-gray-900 font-bold text-sm sm:text-lg leading-relaxed">
+                                {subsection.description}
+                              </p>
+                            </div>
                           </div>
 
                           {/* Subsection Questions */}
